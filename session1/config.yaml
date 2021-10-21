@@ -1,0 +1,7 @@
+WORKING_FOLDER: "/users/hamdy/hyn435/user_data/temp/snakemake_cc_2021/session1"
+
+REF: "hg38.fa"
+
+GATK_PARAMS:
+  P1: "4"
+  P2: "3"
