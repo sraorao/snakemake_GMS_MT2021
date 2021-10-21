@@ -1,8 +1,8 @@
 """
-Workflow to map sequencing data from 4 runs to the genome and mark duplicates
-inputs: single end fastq files in folder named fastq/
+Workflow to plot dupmetrics from 8 bam files
+inputs: bam files in folder named bam/
 outputs:
-    bam files: sorted, duplicate marked bam file for each sample
+    dup marked bam files: sorted, duplicate marked bam file for each sample
     plot: a bar plot of percentage duplication for all samples
 """
 configfile: "config.yaml"
