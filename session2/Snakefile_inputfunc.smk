@@ -7,62 +7,36 @@ outputs:
 """
 configfile: "config.yaml"
 
+import pandas
 from snakemake.utils import min_version
 min_version("5.26")
 
-SAMPLES = config["SAMPLES"]
+samples_df = pandas.read_csv(config["SAMPLE_IDS"])
+TUMOURS = samples_df.tumour
+NORMALS = samples_df.normal
+ALL_SAMPLES = set(list(TUMOURS) + list(NORMALS))
 
-PROJECT = config["PROJECT"]
-
-print(SAMPLES)
+# print(ALL_SAMPLES)
 onsuccess: print("finished successfully") # insert more useful code here, e.g. send email to yourself
 onerror: print("finished with errors") # insert more useful code here, e.g. send email to yourself
 
 rule all:
     input:
-        # merged_bam = "data/merged_bam/merged_bam.bam",
-        # dupmarked_bam = expand("data/dupmarked_bam/{sample}_dupmarked.bam", sample = SAMPLES),
-        # metrics = expand("data/dupmarked_bam/{sample}_dupmetrics.txt", sample = SAMPLES),
-        plot = "data/plots/dups.pdf",
-        python_plot = "data/plots/dups_python.pdf"
+        normal_vs_tumour = expand("output/paired/{normal}.txt", normal = NORMALS),
+        plot = "output/plots/dups.pdf",
+        python_plot = "output/plots/dups_python.pdf"
 
 #-----------------------------------------------------------------------------------------------------------------------
-def get_ref(wildcards):
+def get_tumours_for_normal(wildcards):
     """
-    Return the correct genome file based on REF_VERSION value set in config.yaml
-    :param wildcards:
-    :return:
+    Returns all the tumour samples for a given normal sample
     """
-    if config["REF_VERSION"] == 37:
-        return [config["REF37"]]
-    elif config["REF_VERSION"] == 38:
-        return [config["REF38"]]
-    else:
-        print("incorrect value for reference!")
+    tumours_for_normal = TUMOURS[NORMALS == wildcards.normal]
+    return [f"data/bam/{tumour}.bam" for tumour in tumours_for_normal]
 #-----------------------------------------------------------------------------------------------------------------------
-
-rule align:
-    input:
-        fastq = "data/fastq/{sample}.fastq.gz",
-        ref = get_ref
-    output: temp("data/sam/{sample}.sam") # sam files will be deleted after workflow finishes
-    params:
-        RG = "'@RG\\tID:{sample}\\tSM:{sample}_subset\\tLB:{sample}'"
-    conda: "envs/bwa.yaml"
-    envmodules: "BWA/0.7.17-foss-2018b"
-    threads: 1
-    shell: "which bwa && bwa mem -t {threads} -R {params.RG} {input.ref} {input.fastq} -o {output}"
-
-rule sort_bams:
-    input: rules.align.output
-    output: "data/bam/{sample}.bam"
-    conda: "envs/samtools.yaml"
-    envmodules: "samtools/1.8-gcc5.4.0"
-    threads: 1
-    shell: "which samtools && samtools view -b {input} | samtools sort -o {output} && samtools index {output}"
 
 rule mark_dups:
-    input: rules.sort_bams.output
+    input: "data/bam/{sample}.bam"
     output:
         bam = "data/dupmarked_bam/{sample}_dupmarked.bam",
         metrics = "data/dupmarked_bam/{sample}_dupmetrics.txt"
@@ -71,15 +45,27 @@ rule mark_dups:
     threads: 1
     shell: "which gatk && gatk MarkDuplicates -I {input} -O {output.bam} -M {output.metrics}"
 
+rule demonstrate_input_function:
+    input: 
+        normal = "data/bam/{normal}.bam",
+        tumours = get_tumours_for_normal
+    output:
+        normal_vs_tumours = "output/paired/{normal}.txt"
+    conda: "envs/samtools.yaml"
+    shell:
+        """
+        echo {input.normal} vs {input.tumours} > {output.normal_vs_tumours}
+        """
+
 rule plot_dupmetrics:
-    input: expand("data/dupmarked_bam/{sample}_dupmetrics.txt", sample = SAMPLES)
-    output: "data/plots/dups.pdf"
+    input: expand("data/dupmarked_bam/{sample}_dupmetrics.txt", sample = ALL_SAMPLES)
+    output: "output/plots/dups.pdf"
     conda: "envs/r.yaml"
     envmodules: "R/default"
     script: "scripts/plot.R"
 
 rule plot_dupmetrics_python:
-    input: expand("data/dupmarked_bam/{sample}_dupmetrics.txt", sample = SAMPLES)
-    output: "data/plots/dups_python.pdf"
+    input: expand("data/dupmarked_bam/{sample}_dupmetrics.txt", sample = ALL_SAMPLES)
+    output: "output/plots/dups_python.pdf"
     conda: "envs/python.yaml"
     script: "scripts/plot.py"

@@ -7,16 +7,19 @@ configfile: "config.yaml"
 from snakemake.utils import min_version
 min_version("5.26")
 
-SAMPLES = config["SAMPLES"]
+samples_df = pandas.read_csv(config["SAMPLE_IDS"])
+TUMOURS = samples_df.tumour
+NORMALS = samples_df.normal
+ALL_SAMPLES = set(list(TUMOURS) + list(NORMALS))
 
 print(SAMPLES)
 onsuccess: print("finished successfully") # insert more useful code here, e.g. send email to yourself
 onerror: print("finished with errors") # insert more useful code here, e.g. send email to yourself
 
 rule merge_bams:
-    input: expand("data/bam/{sample}.bam", sample = SAMPLES)
+    input: expand("data/bam/{sample}.bam", sample = ALL_SAMPLES)
     output: "data/merged_bam/merged_bam.bam"
-    params: " -I ".join(expand("data/bam/{sample}.bam", sample = SAMPLES))
+    params: " -I ".join(expand("data/bam/{sample}.bam", sample = ALL_SAMPLES))
     conda: "envs/gatk.yaml"
     envmodules: "GATK/4.1.7.0-GCCcore-8.3.0-Java-11"
     threads: 1

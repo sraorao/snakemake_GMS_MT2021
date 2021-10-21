@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # 'snakemake' object contains 'input', 'output', 'params', 'config'
 print("----------------------------Variables in the snakemake object----------------------------")
 pprint(vars(snakemake))
-print("----------------------------------------------------------------------------------------")
+print("-----------------------------------------------------------------------------------------")
 
 
 metrics_files = snakemake.input  # a list of 4 filenames
@@ -25,9 +25,9 @@ dups = pandas.concat(dups)
 dups.iloc[:, 8] = dups.iloc[:, 8] * 100
 print(dups)
 
-plt.figure()
-dups.iloc[:, 8].plot.bar()
-axes = plt.gca()
-axes.set_ylim([0, 100])
+fig, ax = plt.subplots()
+ax.set_ylim([0, 100])
+
+plt.bar(dups.LIBRARY, dups.PERCENT_DUPLICATION)
 plt.savefig(plot_pdf)
 

@@ -1,4 +1,4 @@
-WORKING_FOLDER: "/users/hamdy/hyn435/user_data/temp/snakemake_cc_2021/session1"
+WORKING_FOLDER: "./"
 
 REF: "hg38.fa"
 

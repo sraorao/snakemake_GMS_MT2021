@@ -1,8 +1,3 @@
-REF38: "/users/hamdy/hyn435/shared/hg38/Homo_sapiens_assembly38.fasta" # your reference bwa index
-REF37: "/users/hamdy/hyn435/shared/hg37d5/hs37d5.fasta" # your reference bwa index
-# REF37: "/well/htseq/Genomes/BWA-0.7/hs37d5" # reference fasta available on Rescomp
-# REF38:
 PROJECT: "PRJNA526724"
-SAMPLES: ['A', 'B', 'C', 'D']
-REF_VERSION: 37 # value can be 37, or 38
+SAMPLE_IDS: "data/samples/sample_ids.csv"
 
