@@ -2,9 +2,8 @@
 (Please read [Intro to snakemake](https://github.com/sraorao/snakemake_cc_2021/tree/main/session1) to become familiar with 
 Snakemake first.)
 
-This is code to build an example [Snakemake](https://snakemake.readthedocs.io/) workflow to process a set of Fastq files. 
-We start with 4 fastq files, map each of them to the human genome with BWA, sort and index the bam files 
-with Samtools, duplicate-mark them using GATK (Picard) and finally plot the duplicate metrics in a pdf. 
+This is code to build an example [Snakemake](https://snakemake.readthedocs.io/) workflow to process a set of bam files. 
+We start with 8 bam files, duplicate-mark them using GATK (Picard) and finally plot the duplicate metrics in a pdf. 
 The Directed Acyclic Graph (DAG) of the workflow looks like this: 
 
 ![DAG](dag.png)
